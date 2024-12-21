@@ -6,10 +6,14 @@ use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function home()
     {
+        // Retrieve the authenticated user
         $user = Auth::user();
 
-        return view('home', compact('user'));
+        // Return the 'home' view with the authenticated user
+        //compact('user')は、ビューにデータを渡すためのメソッドです
+        //ビューとは、ウェブページの見た目を設定するためのファイルです
+        return view('auth.home', compact('user'));
     }
 }
