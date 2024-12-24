@@ -16,4 +16,10 @@ class HomeController extends Controller
         //ビューとは、ウェブページの見た目を設定するためのファイルです
         return view('auth.home', compact('user'));
     }
+    public function index()
+    {
+    $user = Auth::user(); // ログインユーザを取得
+    return view('home', compact('user'));
+    }
+
 }
