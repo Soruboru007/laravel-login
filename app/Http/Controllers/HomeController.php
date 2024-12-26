@@ -18,7 +18,7 @@ class HomeController extends Controller
     }
     public function index()
     {
-    $user = Auth::user(); // ログインユーザを取得
+    $user = Auth::user(); // ログインしていればUserモデルが返り、未ログインならnull
     return view('home', compact('user'));
     }
 
