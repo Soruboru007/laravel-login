@@ -7,8 +7,8 @@
 </head>
 
 <body class="bg-neutral-50 text-neutral-700">
-    <main class="flex items-start justify-center w-full h-screen p-20">
-        <section class="w-1/4 p-4 bg-white border rounded-lg shadow-lg border-neutral-300">
+    <main class="grid w-1/3 h-full grid-flow-row p-20 mx-auto">
+        <section class="w-full p-4 bg-white border rounded-lg shadow-lg border-neutral-300">
             <h1 class="mb-4 text-2xl font-bold">登録</h1>
 
             <form action="{{ route('signup') }}" method="POST" class="grid grid-flow-row gap-4">
