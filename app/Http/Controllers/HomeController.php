@@ -10,11 +10,13 @@ class HomeController extends Controller
     {
         // Retrieve the authenticated user
         $user = Auth::user();
-
-        // Return the 'home' view with the authenticated user
-        //compact('user')は、ビューにデータを渡すためのメソッドです
-        //ビューとは、ウェブページの見た目を設定するためのファイルです
-        return view('auth.home', compact('user'));
+        //$categoriesは、Categoryモデルの全てのレコードを取得します
+        //Categoryモデルとは、カテゴリのデータを操作するためのクラスです
+        //カテコりとは、質問を分類するためのものです
+        $categories = Category::all();
+        //compact('user', 'categories')は、ビューにデータを渡すためのメソッドです
+        //メソッド
+        return view('home.index', compact('user', 'categories'));
     }
     public function index()
     {
