@@ -33,14 +33,6 @@
             </form>
         </div>
     </header>
-    <main class="grid w-full grid-cols-3 gap-12 px-40 py-20">
-        @foreach ($categories as $category)
-            <a href="{{ route('get-questions', ['category_id' => $category->id]) }}"
-                class="w-full p-4 transition-transform duration-300 bg-white border rounded-lg shadow-lg h-52 border-neutral-300 hover:cursor-pointer hover:scale-105">
-                <h1 class="text-3xl font-bold">{{ $category->category_name }}</h1>
-            </a>
-        @endforeach
-    </main>
 </body>
 
 </html>
