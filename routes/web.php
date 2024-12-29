@@ -6,6 +6,16 @@ use App\Http\Controllers\Auth\SignupController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\QuestionController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CategoryController;
+
+// ホーム画面（カテゴリ一覧表示）
+Route::get('/home', [CategoryController::class, 'index'])->name('home');
+
+// カテゴリ作成フォーム表示
+Route::get('/home/create/category', [CategoryController::class, 'create'])->name('category.create');
+
+// カテゴリ作成処理（フォームPOST）
+Route::post('/home/store/category', [CategoryController::class, 'store'])->name('category.store');
 
 Route::get('/',[IndexController::class, 'index'])->name('index');
 
