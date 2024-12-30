@@ -12,7 +12,9 @@ class HomeController extends Controller
         // Retrieve the authenticated user
         $user = Auth::user();
 
+        $categories = Category::all();
+
         // Return the 'home' view with the authenticated user and categories
-        return view('home.index', compact('user'));
+        return view('home.index', compact('user', 'categories'));
     }
 }
