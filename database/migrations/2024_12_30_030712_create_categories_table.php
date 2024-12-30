@@ -6,18 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
-public function up()
-{
-    if (!Schema::hasTable('categories')) {
-        Schema::create('categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('category_name');
-            $table->timestamps();
-        });
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        // テーブルが存在しない場合のみ作成
+        if (!Schema::hasTable('categories')) {
+            Schema::create('categories', function (Blueprint $table) {
+                $table->id();
+                $table->string('category_name'); // カラムを定義
+                $table->timestamps();
+            });
+        }
     }
-}
 
-
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        // テーブルを削除
+        Schema::dropIfExists('categories');
+    }
 };
-
