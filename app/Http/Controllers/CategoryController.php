@@ -4,39 +4,50 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
-    // カテゴリー一覧（ホーム）
-    public function index()
+    public function showCreateCategoryForm()
     {
-        // DBから全カテゴリーを取得
-        $categories = Category::all();
 
-        // home.blade.php に渡す
-        return view('home', compact('categories'));
+        $user = Auth::user();
+
+        return view('home.create-category', compact('user'));
     }
 
-    // カテゴリ作成フォーム
-    public function create()
+    public function createCategory(Request $request)
     {
-        return view('category.create');
-    }
 
-    // カテゴリ保存処理
-    public function store(Request $request)
-    {
-        // バリデーション（例：category_nameは必須・最大50文字程度）
+        // Validate the incoming request
         $request->validate([
-            'category_name' => 'required|string|max:50',
+            'category_name' => 'required|string|max:255|unique:categories', // Ensure the category name is unique
         ]);
 
-        // 新規作成
-        Category::create([
-            'category_name' => $request->input('category_name'),
-        ]);
+        $category = Category::create(['category_name' => $request->input('category_name')]);
+        $category->save();
 
-        // 作成後、一覧ページへリダイレクト（フラッシュメッセージなども付けられる）
-        return redirect()->route('home')->with('status', 'カテゴリを作成しました！');
+        // Redirect to a success page or back with a success message
+        return redirect()->route('create-category')->with('success', 'カテゴリを作成しました。');
+    }
+
+    public function getQuestions(string $category_id)
+    {
+
+        $user = Auth::user();
+
+        // Retrieve the category by its ID
+        $category = Category::find($category_id);
+
+        // If category not found, return a 404 response
+        if (! $category) {
+            abort(404, 'Category not found');
+        }
+
+        // Retrieve all questions that belong to this category
+        $questions = $category->questions; // This assumes you have the relationship defined in the Category model
+
+        // Pass the category to the view
+        return view('home.questions', compact('user', 'category', 'questions'));
     }
 }
