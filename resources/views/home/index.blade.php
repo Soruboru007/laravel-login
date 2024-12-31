@@ -7,7 +7,7 @@
 </head>
 
 <body class="bg-neutral-50 text-neutral-700">
-    <header class="flex justify-end h-16 px-5 py-2 border border-b-neutral-200">
+    <header class="sticky top-0 flex justify-end h-16 px-5 py-2 border border-b-neutral-200">
         <div class="grid grid-cols-[1fr,8rem,8rem] gap-4">
 
             <!-- ユーザー -->
