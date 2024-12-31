@@ -2,52 +2,61 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Question;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class QuestionController extends Controller
 {
-    public function showCreateCategoryForm()
+    public function showCreateQuestionForm()
     {
-
         $user = Auth::user();
 
-        return view('home.create-category', compact('user'));
+        $categories = Category::all();
+
+        return view('home.create-question',compact('user','categories'));
     }
 
-    public function createCategory(Request $request)
+    public function createQuestion(Request $request)
     {
-
-        // Validate the incoming request
-        $request->validate([
-            'category_name' => 'required|string|max:255|unique:categories', // Ensure the category name is unique
+        $validated = $request->validate([
+            'title' => 'required|max:255',
+            'content' => 'required',
+            'category_id' => 'required|exists:categories,id'
         ]);
 
-        // Create a new category
-        $category = new Category;
-        $category->category_name = $request->category_name;
-        $category->save(); // Save the category to the database
+        try {
+            $question = Question::create([
+                'title' => $validated['title'],
+                'content' => $validated['content'],
+                'category_id' => $validated['category_id'],
+                'user_id' => Auth::id()
+            ]);
 
-        // Redirect to a success page or back with a success message
-        return redirect()->route('create-category')->with('success', 'カテゴリを作成しました。');
-
+            return redirect()->route('home')->with('success', '質問が投稿されました');
+        } catch (\Exception $e) {
+            Log::error('質問の作成に失敗しました: ' . $e->getMessage());
+            return back()->with('error', '質問の投稿に失敗しました');
+        }
     }
 
     public function getQuestions(string $category_id)
     {
-
         $user = Auth::user();
 
         // Retrieve the category by its ID
         $category = Category::find($category_id);
 
-        // If category not found, return a 404 response
-        if (! $category) {
+        if (!$category) {
             abort(404, 'Category not found');
         }
 
+        // Retrieve all questions that belong to this category
+        $questions = $category->questions; // This assumes you have the relationship defined in the Category model
+
         // Pass the category to the view
-        return view('home.questions', compact('user', 'category'));
+        return view('home.questions', compact('user', 'category', 'questions'));
     }
 }
