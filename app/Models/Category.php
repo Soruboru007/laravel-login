@@ -9,4 +9,9 @@ class Category extends Model
     protected $fillable = [
         'category_name',
     ];
+
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
 }
