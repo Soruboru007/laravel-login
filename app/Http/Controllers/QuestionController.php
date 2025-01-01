@@ -2,54 +2,69 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Question;
 use App\Models\Category;
+use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class QuestionController extends Controller
 {
     public function showCreateQuestionForm()
     {
+
         $user = Auth::user();
 
         $categories = Category::all();
 
-        return view('home.create-question',compact('user','categories'));
+        return view('home.create-question', compact('user', 'categories'));
     }
 
     public function createQuestion(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|max:255',
-            'content' => 'required',
-            'category_id' => 'required|exists:categories,id'
+
+        // Validate the incoming request
+        $request->validate([
+            'category_id' => 'required|exists:categories,id', // Ensure category exists
+            'question' => 'required|string|max:255',
+            'answer' => 'required|string|max:255',
+            'option_1' => 'required|string|max:255',
+            'option_2' => 'required|string|max:255',
+            'option_3' => 'nullable|string|max:255',  // Make this optional
+            'option_4' => 'nullable|string|max:255',  // Make this optional
         ]);
 
-        try {
-            $question = Question::create([
-                'title' => $validated['title'],
-                'content' => $validated['content'],
-                'category_id' => $validated['category_id'],
-                'user_id' => Auth::id()
-            ]);
+        // Combine the options into an array
+        $options = [
+            $request->input('option_1'),
+            $request->input('option_2'),
+            $request->input('option_3'),
+            $request->input('option_4'),
+        ];
 
-            return redirect()->route('home')->with('success', '質問が投稿されました');
-        } catch (\Exception $e) {
-            Log::error('質問の作成に失敗しました: ' . $e->getMessage());
-            return back()->with('error', '質問の投稿に失敗しました');
-        }
+        // Filter out any empty options (if option_3 or option_4 are not provided)
+        $options = array_filter($options, function ($value) {
+            return ! empty($value);
+        });
+
+        // Create the new question
+        $question = Question::create([
+            'question' => $request->input('question'),
+            'answer' => $request->input('answer'),
+            'options' => json_encode(array_values($options)),  // Store options as JSON
+            'category_id' => $request->input('category_id'),
+        ]);
+        $question->save();
+
+        return redirect()->route('create-question')->with('success', '問題を作成しました。');
     }
 
     public function getQuestions(string $category_id)
     {
         $user = Auth::user();
-
         // Retrieve the category by its ID
         $category = Category::find($category_id);
-
-        if (!$category) {
+        // If category not found, return a 404 response
+        if (! $category) {
             abort(404, 'Category not found');
         }
 

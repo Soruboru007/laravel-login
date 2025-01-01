@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <title>HOME</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -15,23 +14,21 @@
                 <img src="{{ asset('images/profile.jpg') }}" alt="プロフィール画像" class="w-12 h-12 mr-2 rounded-full" />
                 {{ $user->username }}さん
             </div>
-
             <!-- カテゴリ作成 -->
             <button type="button" onclick="window.location='{{ route('create-category') }}'"
                 class="w-32 px-2 bg-white border rounded-md hover:text-neutral-100 hover:bg-neutral-700 border-neutral-700 hover:cursor-pointer">
                 カテゴリ作成
             </button>
 
-                        <!-- 問題作成 -->
-                        <button type="button" onclick="window.location='{{ route('create-question') }}'"
-                        class="w-32 px-2 bg-white border rounded-md hover:text-neutral-100 hover:bg-neutral-700 border-neutral-700 hover:cursor-pointer">
-                        問題作成
-                    </button>
+            <!-- 問題作成 -->
+            <button type="button" onclick="window.location='{{ route('create-question') }}'"
+                class="w-32 px-2 bg-white border rounded-md hover:text-neutral-100 hover:bg-neutral-700 border-neutral-700 hover:cursor-pointer">
+                問題作成
+            </button>
 
             <!-- ログアウト -->
             <form action="{{ route('logout') }}" method="POST" class="flex items-center justify-end w-full h-full">
                 @csrf
-
                 <button type="submit"
                     class="w-32 h-full bg-white border rounded-md border-neutral-700 hover:text-neutral-100 hover:bg-neutral-700">
                     <h2>ログアウト</h2>
@@ -48,5 +45,4 @@
         @endforeach
     </main>
 </body>
-
 </html>

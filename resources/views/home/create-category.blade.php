@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
 <head>
     <title>カテゴリ作成</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -15,17 +14,14 @@
                 <img src="{{ asset('images/profile.jpg') }}" alt="プロフィール画像" class="w-12 h-12 mr-2 rounded-full" />
                 {{ $user->username }}さん
             </div>
-
             <!-- ホーム -->
             <button type="button" onclick="window.location='{{ route('home') }}'"
                 class="w-32 px-2 bg-white border rounded-md hover:text-neutral-100 hover:bg-neutral-700 border-neutral-700 hover:cursor-pointer">
                 ホーム
             </button>
-
             <!-- ログアウト -->
             <form action="{{ route('logout') }}" method="POST" class="flex items-center justify-end w-full h-full">
                 @csrf
-
                 <button type="submit"
                     class="w-32 h-full bg-white border rounded-md border-neutral-700 hover:text-neutral-100 hover:bg-neutral-700">
                     <h2>ログアウト</h2>
@@ -34,20 +30,16 @@
         </div>
     </header>
     <main class="grid w-1/3 h-full grid-flow-row p-20 mx-auto">
-
         <!-- Display Success Message -->
         @if (session('success'))
             <section class="p-4 mb-4 text-green-800 bg-green-200 rounded-md">
                 {{ session('success') }}
             </section>
         @endif
-
         <section class="w-full p-4 bg-white border rounded-lg shadow-lg border-neutral-300">
             <h1 class="mb-4 text-2xl font-bold">カテゴリ作成</h1>
-
             <form action="{{ route('create-category') }}" method="POST" class="grid grid-flow-row gap-4">
                 @csrf
-
                 <input type="text" name="category_name" placeholder="カテゴリ名"
                     class="w-full h-12 p-2 border border-gray-300 rounded-md outline-none focus:border-neutral-700 hover:border-neutral-700">
                 <button type="submit"
@@ -55,7 +47,6 @@
                     作成
                 </button>
             </form>
-
             <!-- Validation Errors -->
             @if ($errors->any())
                 <div class="p-4 my-4 text-red-800 bg-red-200 rounded-md">
@@ -69,5 +60,4 @@
         </section>
     </main>
 </body>
-
 </html>
