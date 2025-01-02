@@ -2,56 +2,113 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Answer;
+use App\Models\AnswerSession;
 use App\Models\Category;
+use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
-    // カテゴリ作成フォームを表示するメソッド
     public function showCreateCategoryForm()
     {
-        // 現在認証されているユーザーを取得
         $user = Auth::user();
-
-        // ユーザー情報をビューに渡してカテゴリ作成フォームを表示
         return view('home.create-category', compact('user'));
     }
-
-    // カテゴリを作成するメソッド
     public function createCategory(Request $request)
     {
-        // リクエスト内容をバリデーション
+        // Validate the incoming request
         $request->validate([
-            'category_name' => 'required|string|max:255|unique:categories', // カテゴリ名がユニークであることを確認
+            'category_name' => 'required|string|max:255|unique:categories', // Ensure the category name is unique
         ]);
-
-        // 新しいカテゴリを作成
         $category = Category::create(['category_name' => $request->input('category_name')]);
         $category->save();
-
-        // 成功メッセージを添えてカテゴリ作成ページにリダイレクト
+        // Redirect to a success page or back with a success message
         return redirect()->route('create-category')->with('success', 'カテゴリを作成しました。');
     }
 
-    // 特定のカテゴリに属する質問を取得するメソッド
-    public function getQuestions(string $category_id)
+    public function saveAnswers(Request $request)
     {
-        // 現在認証されているユーザーを取得
-        $user = Auth::user();
+        // Get all query string parameters
+        $queryParams = $request->query();
 
-        // IDでカテゴリを取得
-        $category = Category::find($category_id);
+        // Assume the category_id is passed in the query string
+        $categoryId = $queryParams['category_id'] ?? null;
 
-        // カテゴリが存在しない場合、404エラーを返す
-        if (! $category) {
-            abort(404, 'カテゴリが見つかりません');
+        if (! $categoryId) {
+            return response()->json(['error' => 'Category ID is required'], 400);
         }
 
-        // このカテゴリに属するすべての質問を取得
-        $questions = $category->questions; // Categoryモデルに定義されたリレーションを使用
+        // Create a new answer session
+        $session = AnswerSession::create([
+            'category_id' => $categoryId,
+            'session_id' => uniqid('session_', true), // Generate a unique session identifier
+        ]);
+        $session->save();
 
-        // 質問とカテゴリ情報をビューに渡す
-        return view('home.questions', compact('user', 'category', 'questions'));
+        // Remove category_id from the queryParams so only answers remain
+        unset($queryParams['category_id']);
+
+        // Process each question/answer pair in the query string
+        foreach ($queryParams as $questionId => $answerValue) {
+            // Validate the question exists
+            $question = Question::find($questionId);
+            if (! $question) {
+                continue; // Skip invalid question IDs
+            }
+
+            // Check if the answer is correct
+            $isCorrect = $question->answer === $answerValue;
+
+            // Save the answer
+            Answer::create([
+                'question_id' => $questionId,
+                'answer' => $answerValue,
+                'is_correct' => $isCorrect,
+            ]);
+        }
+
+        return redirect()->route('get-results', ['category_id' => $categoryId]);
+    }
+
+    public function getResults(string $category_id)
+    {
+
+        $user = Auth::user();
+
+        $category = Category::find($category_id);
+
+        if (! $category) {
+            abort(404, 'Category not found');
+        }
+
+        $answerSessions = $category->getAnswerSessionsByUserIdAndCategoryId();
+
+        $results = [];
+
+        foreach ($answerSessions as $answerSession) {
+            $answers = Answer::where('answer_session_id', $answerSession->id);
+
+            $totalAnswers = 0;
+            $totalCorrectAnswers = 0;
+            $percentageCorrectAnswers = 0;
+            foreach ($answers as $answer) {
+                if ($answer->is_correct) {
+                    $totalCorrectAnswers++;
+                }
+                $totalAnswers++;
+            }
+
+            $results[] = [
+                'category_name' => $answerSession->category->category_name,
+                'total_answers' => $totalAnswers,
+                'total_correct_answers' => $totalCorrectAnswers,
+                'correct_answer_rate' => ($totalCorrectAnswers / $totalAnswers) * 100,
+                'datetime' => $answerSession->created_at,
+            ];
+        }
+
+        return view('home.results', compact('user', 'category', 'results'));
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnswerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\SignupController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\QuestionController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ResultController;
 
 // ホーム画面（カテゴリ一覧表示）
 Route::get('/home', [CategoryController::class, 'index'])->name('home');
@@ -36,3 +38,7 @@ Route::post('/home/create/category', [CategoryController::class, 'createCategory
 Route::get('/home/create/question', [QuestionController::class, 'showCreateQuestionForm'])->name('create-question')->middleware('auth');
 Route::post('/home/create/question', [QuestionController::class, 'createQuestion'])->middleware('auth');
 Route::get('/home/categories/{category_id}/questions', [QuestionController::class, 'getQuestions'])->name('get-questions')->middleware('auth');
+
+Route::post('/home/categories/{category_id}/answers', [AnswerController::class, 'saveAnswers'])->name('save-answers')->middleware('auth');
+
+Route::get('/home/categories/{category_id}/results', [ResultController::class, 'getResults'])->name('get-results')->middleware('auth');
