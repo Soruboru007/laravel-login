@@ -11,104 +11,118 @@ use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
 {
+    // カテゴリ作成フォームを表示する
     public function showCreateCategoryForm()
     {
-        $user = Auth::user();
-        return view('home.create-category', compact('user'));
+        $user = Auth::user(); // 現在認証されているユーザーを取得
+        return view('home.create-category', compact('user')); // ユーザー情報をビューに渡す
     }
+
+    // 新しいカテゴリを作成する
     public function createCategory(Request $request)
     {
-        // Validate the incoming request
+        // リクエストデータをバリデーション
         $request->validate([
-            'category_name' => 'required|string|max:255|unique:categories', // Ensure the category name is unique
+            'category_name' => 'required|string|max:255|unique:categories', // カテゴリ名はユニークかつ必須
         ]);
+
+        // 新しいカテゴリを作成し保存
         $category = Category::create(['category_name' => $request->input('category_name')]);
         $category->save();
-        // Redirect to a success page or back with a success message
+
+        // 成功メッセージを添えてカテゴリ作成ページにリダイレクト
         return redirect()->route('create-category')->with('success', 'カテゴリを作成しました。');
     }
 
+    // ユーザーの回答を保存する
     public function saveAnswers(Request $request)
     {
-        // Get all query string parameters
+        // クエリ文字列の全パラメータを取得
         $queryParams = $request->query();
 
-        // Assume the category_id is passed in the query string
+        // クエリ文字列からカテゴリIDを取得（存在しない場合はnull）
         $categoryId = $queryParams['category_id'] ?? null;
 
+        // カテゴリIDが存在しない場合、エラーメッセージを返す
         if (! $categoryId) {
             return response()->json(['error' => 'Category ID is required'], 400);
         }
 
-        // Create a new answer session
+        // 新しい回答セッションを作成
         $session = AnswerSession::create([
-            'category_id' => $categoryId,
-            'session_id' => uniqid('session_', true), // Generate a unique session identifier
+            'category_id' => $categoryId, // 対応するカテゴリIDを関連付け
+            'session_id' => uniqid('session_', true), // 一意のセッション識別子を生成
         ]);
         $session->save();
 
-        // Remove category_id from the queryParams so only answers remain
+        // クエリ文字列からカテゴリIDを削除し、回答データのみを残す
         unset($queryParams['category_id']);
 
-        // Process each question/answer pair in the query string
+        // クエリ文字列内の各質問と回答を処理する
         foreach ($queryParams as $questionId => $answerValue) {
-            // Validate the question exists
+            // 質問が存在するかを検証
             $question = Question::find($questionId);
             if (! $question) {
-                continue; // Skip invalid question IDs
+                continue; // 無効な質問IDはスキップ
             }
 
-            // Check if the answer is correct
+            // 回答が正しいかどうかを判定
             $isCorrect = $question->answer === $answerValue;
 
-            // Save the answer
+            // 回答を保存
             Answer::create([
-                'question_id' => $questionId,
-                'answer' => $answerValue,
-                'is_correct' => $isCorrect,
+                'question_id' => $questionId, // 質問ID
+                'answer' => $answerValue, // ユーザーが入力した回答
+                'is_correct' => $isCorrect, // 正解かどうかのフラグ
             ]);
         }
 
+        // 結果表示ページへリダイレクト
         return redirect()->route('get-results', ['category_id' => $categoryId]);
     }
 
+    // カテゴリごとの結果を取得する
     public function getResults(string $category_id)
     {
+        $user = Auth::user(); // 現在認証されているユーザーを取得
 
-        $user = Auth::user();
-
+        // カテゴリIDに基づいてカテゴリを取得
         $category = Category::find($category_id);
 
+        // カテゴリが存在しない場合、404エラーを返す
         if (! $category) {
-            abort(404, 'Category not found');
+            abort(404, 'カテゴリが見つかりません');
         }
 
+        // 現在のユーザーとカテゴリに紐づく回答セッションを取得
         $answerSessions = $category->getAnswerSessionsByUserIdAndCategoryId();
 
-        $results = [];
+        $results = []; // 結果を格納する配列
 
+        // 各回答セッションの結果を処理
         foreach ($answerSessions as $answerSession) {
-            $answers = Answer::where('answer_session_id', $answerSession->id);
+            $answers = Answer::where('answer_session_id', $answerSession->id); // セッションに紐づく回答を取得
 
-            $totalAnswers = 0;
-            $totalCorrectAnswers = 0;
-            $percentageCorrectAnswers = 0;
+            $totalAnswers = 0; // 総回答数
+            $totalCorrectAnswers = 0; // 正解数
             foreach ($answers as $answer) {
                 if ($answer->is_correct) {
-                    $totalCorrectAnswers++;
+                    $totalCorrectAnswers++; // 正解数をカウント
                 }
-                $totalAnswers++;
+                $totalAnswers++; // 総回答数をカウント
             }
 
+            // 結果データを配列に追加
             $results[] = [
-                'category_name' => $answerSession->category->category_name,
-                'total_answers' => $totalAnswers,
-                'total_correct_answers' => $totalCorrectAnswers,
-                'correct_answer_rate' => ($totalCorrectAnswers / $totalAnswers) * 100,
-                'datetime' => $answerSession->created_at,
+                'category_name' => $answerSession->category->category_name, // カテゴリ名
+                'total_answers' => $totalAnswers, // 総回答数
+                'total_correct_answers' => $totalCorrectAnswers, // 正解数
+                'correct_answer_rate' => ($totalCorrectAnswers / $totalAnswers) * 100, // 正解率
+                'datetime' => $answerSession->created_at, // セッション作成日時
             ];
         }
 
+        // 結果をビューに渡して表示
         return view('home.results', compact('user', 'category', 'results'));
     }
 }
