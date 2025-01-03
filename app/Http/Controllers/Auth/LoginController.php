@@ -7,33 +7,44 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
+// LoginController: ユーザーのログイン処理を管理するコントローラー
 class LoginController extends Controller
 {
-    // Show the login form
+    /**
+     * ログインフォームを表示する
+     *
+     * @return \Illuminate\View\View
+     */
     public function showLoginForm()
     {
-        return view('auth.login');
+        return view('auth.login'); // 'auth.login' ビューを返す
     }
 
-    // Handle the login request
-
+    /**
+     * ログインリクエストを処理する
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function login(Request $request)
     {
-        // Validate the login data
+        // ログインデータを取得（username と password のみ）
         $credentials = $request->only('username', 'password');
 
-        // Attempt to authenticate the user
+        // ユーザー認証を試行する
         if (Auth::attempt($credentials)) {
-            // If authentication is successful, fetch the authenticated user
-            $user = Auth::user();  // Get the logged-in user's information
+            // 認証成功時、ログイン中のユーザー情報を取得
+            $user = Auth::user(); // 認証されたユーザー情報を取得
 
-            // Redirect to the home page and pass the user data to the view
-            return redirect()->route('home')->with('user', $user);  // You can pass it via session or directly to the view
+            // ホームページへリダイレクトし、ユーザー情報をビューに渡す
+            return redirect()->route('home')->with('user', $user); // セッション経由でデータを渡す
         }
 
-        // If authentication fails, redirect back with an error message
+        // 認証失敗時、エラーメッセージと共にリダイレクト
         throw ValidationException::withMessages([
-            'username' => ['The provided credentials are incorrect.'],
+            'username' => ['提供された認証情報が正しくありません。'], // エラーメッセージを表示
         ]);
     }
 }
