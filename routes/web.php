@@ -20,25 +20,36 @@ Route::get('/home/create/category', [CategoryController::class, 'create'])->name
 // カテゴリ作成処理（フォームPOST）
 Route::post('/home/store/category', [CategoryController::class, 'store'])->name('category.store');
 
+// トップページの表示（ログインページにリダイレクトされる可能性あり）
 Route::get('/', [IndexController::class, 'index'])->name('index');
 
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
+// ログイン関連ルート
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login'); // ログインフォームの表示
+Route::post('/login', [LoginController::class, 'login']); // ログイン処理
 
-Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
+// ログアウト関連ルート
+Route::post('/logout', [LogoutController::class, 'logout'])->name('logout'); // ログアウト処理
 
-Route::get('/signup', [SignupController::class, 'showRegistrationForm'])->name('signup');
-Route::post('/signup', [SignupController::class, 'signup']);
+// サインアップ（登録）関連ルート
+Route::get('/signup', [SignupController::class, 'showRegistrationForm'])->name('signup'); // 登録フォームの表示
+Route::post('/signup', [SignupController::class, 'signup']); // 登録処理
 
-Route::get('/home', [HomeController::class, 'home'])->name('home')->middleware('auth');
+// ホーム画面（ログイン済みユーザー専用）
+Route::get('/home', [HomeController::class, 'home'])->name('home')->middleware('auth'); // 認証済みユーザーのみアクセス可能
 
-Route::get('/home/create/category', [CategoryController::class, 'showCreateCategoryForm'])->name('create-category')->middleware('auth');
-Route::post('/home/create/category', [CategoryController::class, 'createCategory'])->middleware('auth');
+// カテゴリ作成関連ルート（認証済みユーザー専用）
+Route::get('/home/create/category', [CategoryController::class, 'showCreateCategoryForm'])->name('create-category')->middleware('auth'); // カテゴリ作成フォームの表示
+Route::post('/home/create/category', [CategoryController::class, 'createCategory'])->middleware('auth'); // カテゴリ作成処理
 
-Route::get('/home/create/question', [QuestionController::class, 'showCreateQuestionForm'])->name('create-question')->middleware('auth');
-Route::post('/home/create/question', [QuestionController::class, 'createQuestion'])->middleware('auth');
-Route::get('/home/categories/{category_id}/questions', [QuestionController::class, 'getQuestions'])->name('get-questions')->middleware('auth');
+// 問題作成関連ルート（認証済みユーザー専用）
+Route::get('/home/create/question', [QuestionController::class, 'showCreateQuestionForm'])->name('create-question')->middleware('auth'); // 問題作成フォームの表示
+Route::post('/home/create/question', [QuestionController::class, 'createQuestion'])->middleware('auth'); // 問題作成処理
 
-Route::post('/home/categories/{category_id}/answers', [AnswerController::class, 'saveAnswers'])->name('save-answers')->middleware('auth');
+// カテゴリごとの問題表示ルート（認証済みユーザー専用）
+Route::get('/home/categories/{category_id}/questions', [QuestionController::class, 'getQuestions'])->name('get-questions')->middleware('auth'); // カテゴリ内の問題一覧を表示
 
-Route::get('/home/categories/{category_id}/results', [ResultController::class, 'getResults'])->name('get-results')->middleware('auth');
+// 問題の回答保存ルート（認証済みユーザー専用）
+Route::post('/home/categories/{category_id}/answers', [AnswerController::class, 'saveAnswers'])->name('save-answers')->middleware('auth'); // 問題の回答を保存
+
+// 結果表示ルート（認証済みユーザー専用）
+Route::get('/home/categories/{category_id}/results', [ResultController::class, 'getResults'])->name('get-results')->middleware('auth'); // カテゴリごとの結果を表示
