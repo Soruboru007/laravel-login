@@ -1,27 +1,35 @@
 <?php
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
+
+// Questionモデル: 質問データを管理する
 class Question extends Model
 {
-    // Define the attributes that are mass assignable
+    // 一括割り当て可能な属性を定義
     protected $fillable = ['category_id', 'question', 'answer', 'options'];
-    // Cast 'options' to an array (for easy handling of the JSON field)
+    // このモデルで一括割り当て可能な属性（データベースのカラム）を指定します。
+
+    // 'options' 属性を配列としてキャストする
     protected $casts = [
-        'options' => 'array', // Automatically converts the JSON field to an array
+        'options' => 'array', // JSON形式のフィールドを自動的に配列に変換
     ];
+
     /**
-     * Define the relationship with the Category model.
+     * Categoryモデルとのリレーションを定義
+     * この質問がどのカテゴリに属するかを表します。
      */
     public function category()
     {
-        return $this->belongsTo(Category::class); // A question belongs to one category
+        return $this->belongsTo(Category::class); // 質問は1つのカテゴリに属します
     }
 
     /**
-     * Define the relationship with the Answer model.
+     * Answerモデルとのリレーションを定義
+     * この質問に関連する回答を取得します。
      */
     public function answers()
     {
-        return $this->hasMany(Answer::class);
+        return $this->hasMany(Answer::class); // 質問には複数の回答が関連付けられます
     }
 }
