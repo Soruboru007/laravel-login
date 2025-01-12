@@ -53,3 +53,10 @@ Route::post('/home/categories/{category_id}/answers', [AnswerController::class, 
 
 // 結果表示ルート（認証済みユーザー専用）
 Route::get('/home/categories/{category_id}/results', [ResultController::class, 'getResults'])->name('get-results')->middleware('auth'); // カテゴリごとの結果を表示
+
+Route::get('/test/{name}/age/{age}', function (string $name, string $age) {
+    return view('test',  [
+        "name123" => $name,
+        "age" => $age,
+    ]);
+});
